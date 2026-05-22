@@ -12,8 +12,7 @@ st.set_page_config(page_title="Deepfake Audio Auditor Dashboard", layout="wide")
 # --- CUSTOM CACHED LOADERS FOR MAXIMUM PERFORMANCE ---
 @st.cache_resource
 def load_verification_system():
-    # compile=False allows Keras to load the model architecture weights 
-    # without crashing over the custom professor_attention_layer configurations
+    # compile=False allows Keras to load the model architecture weights safely
     nn_brain = tf.keras.models.load_model("enhanced_attention_model_v5.keras", compile=False)
     feature_extractor = tf.keras.models.Model(inputs=nn_brain.input, outputs=nn_brain.get_layer('deep_features').output)
     xgb_judge = joblib.load("xgboost_refiner_v5.pkl")
@@ -65,15 +64,4 @@ if uploaded_file is not None:
             else:
                 padded = raw_features[:, :130]
             
-            input_tensor = np.expand_dims(padded.T, axis=0) # Shape format: (1, 130, 60)
-            
-            # 2. Dual-Layer Prediction Execution
-            deep_embeddings = feature_extractor.predict(input_tensor)
-            ai_probability = xgb_judge.predict_proba(deep_embeddings)[0, 1]
-            
-            # 🔥 --- SECURITY THRESHOLD HARDENING --- 🔥
-            # Set to 0.38 to aggressively capture subtle, platform-compressed AI voice anomalies
-            HARDENED_THRESHOLD = 0.38
-            
-            if ai_probability >= HARDENED_THRESHOLD:
-                st.error("🚨 **DIAGNOSIS REJECTED: HIGH
+            input_tensor = np.expand_dims(padded.T, axis=0) # Shape format: (1, 130, 6
